@@ -1,0 +1,338 @@
+#include <stdio.h>
+#include <conio.h>
+#include <iostream>
+#include <string.h>
+#include <stdlib.h>
+#define MAX 100
+
+typedef struct {
+	int id;
+	char ten[50];
+	int tuoi;
+	float diemHTMT;
+	float diemKTS;
+	float diemCSTDT;
+	float diemTB;
+	char hocluc[10];
+} SinhVien;
+
+typedef struct Node {
+	SinhVien sv;
+	struct Node* next;
+} Node;
+
+typedef struct {
+	Node* top;
+} Stack;
+
+
+typedef SinhVien SV;
+
+void printLine(int n);
+void nhapThongTinSV(SV *sv, int id);
+void nhapSV(Stack *S, SV a[], int n);
+int xoaTheoID(SV a[], int id, int n);
+void timTen(Stack *s, char *ten);
+void tinhDTB(SV *sv);
+void xeploai(SV *sv);
+void showStudent(Stack *S, int n);
+void initStack(Stack* s);
+void pushStack(Stack* s, SinhVien sv);
+SinhVien pop(Stack* s);
+SinhVien top(Stack* s);
+void printStack(Stack *s);
+int isEmpty(Stack* s);
+void pressAnyKey();
+
+
+int main() {
+	Stack S;
+	initStack(&S);
+	int key;
+	SV arraySV[MAX];
+	int soluongSV = 0;
+
+
+	while(true) {
+		printf("              CHUONG TRINH QUAN LY SINH VIEN C          \n");
+		printf(" *******************************************************\n");
+		printf(" **  1. Nhap thong tin sinh vien.                     **\n");
+		printf(" **  2. Xoa sinh vien theo ID.                        **\n");
+		printf(" **  3. Tim kiem sinh vien theo ten.                  **\n");
+		printf(" **  4. Hien thi danh sach sinh vien.                 **\n");
+		printf(" **  0. Thoat                                         **\n");
+		printf(" *******************************************************\n");
+		printf(" Nhap tuy chon: ");
+		scanf("%d", &key);
+		switch(key) {
+			case 1:
+				printf("\nThem sinh vien.");
+				nhapSV(&S, arraySV, soluongSV);
+				printf("\nThem sinh vien thanh cong!");
+				soluongSV++;
+				pressAnyKey();
+				break;
+			case 2:
+				if(soluongSV > 0) {
+					int id;
+					printf( "\nXoa sinh vien.");
+					printf( "\n Nhap ID: ");
+					scanf("%d",  &id);
+					if (xoaTheoID(arraySV, id, soluongSV) == 1) {
+						printf("\nSinh vien da bi xoa khoi danh sach.");
+						soluongSV--;
+					}
+				} else {
+					printf( "\nDanh sach sinh vien trong!");
+				}
+				pressAnyKey();
+				break;
+			case 3:
+				if (soluongSV > 0) {
+					printf("\nTim kiem sinh vien theo ten.");
+					char strTen[30];
+					printf("\nNhap ten de tim kiem: ");
+					fflush(stdin);
+					gets(strTen);
+					timTen(&S, strTen);
+				} else {
+					printf("\nDanh sach sinh vien trong!");
+				}
+				pressAnyKey();
+				break;
+			case 4:
+				if(soluongSV > 0) {
+					printf("\nHien thi danh sach sinh vien.");
+					showStudent(&S, soluongSV);
+				} else {
+					printf("\nDanh sach sinh vien trong!");
+				}
+				pressAnyKey();
+				break;
+
+			case 0:
+				printf("\nThan ai va chao tam biet!");
+				getch();
+				return 0;
+			default:
+				printf("\nKhong co chuc nang nay!");
+				printf("\nHay chon chuc nang trong hop menu.");
+				pressAnyKey();
+				break;
+		}
+	}
+}
+
+//tinh diem trung binh mon
+void tinhDTB(SV *sv) {
+	sv->diemTB = (sv->diemHTMT + sv->diemKTS + sv->diemCSTDT) / 3;
+}
+
+//xep loai hoc luc sinh vien
+void xeploai(SV *sv) {
+	if(sv->diemTB >= 8) strcpy(sv->hocluc, "Gioi");
+	else if(sv->diemTB >= 6.5) strcpy(sv->hocluc, "Kha");
+	else if(sv->diemTB >= 5) strcpy(sv->hocluc, "Trung binh");
+	else strcpy(sv->hocluc, "Yeu");
+}
+
+//xu ly chuoi ho va ten
+void vietHoaChuCaiDau(char *str) {
+	int i = 0;
+	while (str[i] != '\0') {
+		if (i == 0 || str[i - 1] == ' ') {
+			if (str[i] >= 'a' && str[i] <= 'z') {
+				str[i] -= 32;
+			}
+		}
+		i++;
+	}
+}
+void xoaKhoangTrangDu(char *str) {
+	int i = 0;
+	while (str[i] == ' ') {
+		i++;
+	}
+	if (i > 0) {
+		strcpy(&str[0], &str[i]);
+	}
+	i = strlen(str) - 1;
+	while (str[i] == ' ') {
+		i--;
+	}
+	str[i + 1] = '\0';
+	i = 0;
+	while (str[i] != '\0') {
+		if (str[i] == ' ') {
+			int j = i + 1;
+			while (str[j] == ' ') {
+				j++;
+			}
+			if (j > i + 1) {
+				strcpy(&str[i + 1], &str[j]);
+			}
+		}
+		i++;
+	}
+}
+
+//nhap thong tin sinh vien
+void nhapThongTinSV(Stack *S, SV *sv) {
+	printf("\n Nhap id: ");
+	scanf("%d", &sv->id);
+	printf(" Nhap ten: ");
+	fflush(stdin);
+	gets(sv->ten);
+	vietHoaChuCaiDau(sv->ten);
+	xoaKhoangTrangDu(sv->ten);
+	printf(" Nhap tuoi: ");
+	scanf("%d", &sv->tuoi);
+	printf(" Nhap diem HTMT: ");
+	scanf("%f", &sv->diemHTMT);
+	printf(" Nhap diem KTS: ");
+	scanf("%f", &sv->diemKTS);
+	printf(" Nhap diem CSTDT: ");
+	scanf("%f", &sv->diemCSTDT);
+	tinhDTB(sv);
+	xeploai(sv);
+	pushStack(S, *sv);
+}
+
+void nhapSV(Stack *S, SV a[], int n) {
+	printLine(40);
+	printf("\n Nhap sinh vien thu %d:", n + 1);
+	nhapThongTinSV(S, &a[n]);
+	printLine(40);
+}
+
+void printStack(Stack* s) {
+	if (isEmpty(s)) {
+		printf("Stack rong!");
+		return;
+	}
+
+	printf("Danh sach sinh vien:\n");
+
+	Node* current = s->top;
+	while (current != NULL) {
+		SinhVien sv = current->sv;
+		printf("%d\t%s\t%d\t%.2f\t%.2f\t%.2f\t%.2f\t%s\n", sv.id, sv.ten, sv.tuoi,
+		       sv.diemHTMT, sv.diemKTS, sv.diemCSTDT, sv.diemTB, sv.hocluc);
+		current = current->next;
+	}
+}
+
+//xoa ten
+void pop(SV a[], int i, int n) {
+	for (int j = i; j < n - 1; j++) {
+		a[j] = a[j + 1];
+	}
+}
+
+int xoaTheoID(SV a[], int id, int n) {
+	int found = 0;
+	for (int i = 0; i < n; i++) {
+		if (a[i].id == id) {
+			found = 1;
+			printLine(40);
+			pop(a, i, n);
+			printf("\n Da xoa SV co ID = %d", id);
+			printLine(40);
+			break;
+		}
+	}
+	if (found == 0) {
+		printf("\n Sinh vien co ID = %d khong ton tai.", id);
+		return 0;
+	} else {
+		return 1;
+	}
+}
+
+//tim kiem theo ten sinh vien
+void timTen(Stack *S, char *ten) {
+	if (isEmpty(S)) {
+		printf("Stack rong!");
+		return;
+	}
+	Node* current = S->top;
+	while (current != NULL) {
+		SinhVien sv = current->sv;
+		if (strcmp(sv.ten, ten) == 0) {
+			printf("\nID: %d\n", sv.id);
+			printf("Ho va ten: %s\n", sv.ten);
+			printf("Tuoi: %d\n", sv.tuoi);
+			printf("HTMT: %.2f\n", sv.diemHTMT);
+			printf("KTS: %.2f\n", sv.diemKTS);
+			printf("CSTDT: %.2f\n", sv.diemCSTDT);
+			printf("Diem TB: %.2f\n", sv.diemTB);
+			printf("Hoc luc: %s\n", sv.hocluc);
+			return;
+		}
+		current = current->next;
+	}
+	printf("Khong tim thay sinh vien co ten la %s\n", ten);
+}
+
+
+// hien danh sach sinh vien
+void showStudent(Stack *s, int n) {
+	if (isEmpty(s)) {
+		printf("Stack rong!");
+		return;
+	}
+	printLine(100);
+	printf("Danh sach sinh vien:\n");
+	printf("\nID\t\tHo va ten\t\tTuoi\tHTMT\tKTS\tCSTDT\tDiem TB\t\tHoc luc");
+	Node* current = s->top;
+	while (current != NULL) {
+		SinhVien sv = current->sv;
+		printf("\n%d\t\t%s\t\t%d\t%.2f\t%.2f\t%.2f\t%.2f\t\t%s\n", sv.id, sv.ten, sv.tuoi,
+		       sv.diemHTMT, sv.diemKTS, sv.diemCSTDT, sv.diemTB, sv.hocluc);
+		current = current->next;
+	}
+}
+void printLine(int n) {
+	printf("\n");
+	for (int i = 0; i < n; i++) {
+		printf("_");
+	}
+	printf("\n");
+}
+void pressAnyKey() {
+	printf("\n\nBam phim bat ky de tiep tuc...");
+	getch();
+	system("cls");
+}
+
+// khai bao stack
+void initStack(Stack* s) {
+	s->top = NULL;
+}
+void pushStack(Stack* s, SinhVien sv) {
+	Node* newNode = (Node*) malloc(sizeof(Node));
+	newNode->sv = sv;
+	newNode->next = s->top;
+	s->top = newNode;
+}
+SinhVien pop(Stack* s) {
+	if (isEmpty(s)) {
+		printf("Stack rong!");
+		exit(1);
+	}
+	Node* temp = s->top;
+	SinhVien sv = temp->sv;
+	s->top = s->top->next;
+	free(temp);
+	return sv;
+}
+SinhVien top(Stack* s) {
+	if (isEmpty(s)) {
+		printf("Stack rong!");
+		exit(1);
+	}
+	return s->top->sv;
+}
+int isEmpty(Stack* s) {
+	return s->top == NULL;
+}
