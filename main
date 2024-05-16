@@ -15,7 +15,7 @@ typedef struct {
 	float diemTB;
 	char hocluc[10];
 } SinhVien;
-
+// Structure to represent a student with various attributes
 typedef struct Node {
 	SinhVien sv;
 	struct Node* next;
